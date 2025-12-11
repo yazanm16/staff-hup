@@ -33,8 +33,13 @@
                         <p class="text-xs text-gray-500 capitalize">{{ auth()->user()->role }}</p>
                     </div>
 
-                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-blue-600"></i>
+                    <div class="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
+                        @if (auth()->user()->image && file_exists(public_path('storage/employees/' . auth()->user()->image)))
+                            <img class="w-full h-full object-cover"
+                                src="{{ asset('storage/employees/' . auth()->user()->image) }}" alt="User Image">
+                        @else
+                            <i class="fas fa-user text-blue-600"></i>
+                        @endif
                     </div>
 
                     <!-- LOGOUT -->
