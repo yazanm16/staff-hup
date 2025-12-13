@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateEmployeeRequest;
-
+use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Department;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -16,8 +17,9 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $users=User::get();
-        return view('employees.index',compact('users'));
+        $users=User::paginate(2);
+        $departments = Department::get();
+        return view('employees.index',compact('users','departments'));
     }
 
     /**
@@ -35,12 +37,14 @@ class EmployeeController extends Controller
     public function store(CreateEmployeeRequest $request)
     {
         $data=$request->validated();
-        $image = $request->image;
-        $new_image = time() . '-' . $image->getClientOriginalName();
-        $image->StoreAs('employees', $new_image, 'public');
-        $data['image'] =  $new_image;
+        if($request->hasFile('image')){
+            $image = $request->image;
+            $new_image = time() . '-' . $image->getClientOriginalName();
+            $image->StoreAs('employees', $new_image, 'public');
+            $data['image'] =  $new_image;
+        }
         User::create($data);
-        return back()->with('EmployeeCreateStatus', 'Employee created successfully.');
+        return redirect()->route('employees.index')->with('message','Employee created successfully.')->with('type','success');
     }
 
     /**
@@ -54,24 +58,36 @@ class EmployeeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $employee)
     {
-        //
+        $departments = Department::get();
+        return view('employees.edit',compact('employee','departments'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateEmployeeRequest $request, User $employee)
     {
-        //
+        $date=$request->validated();
+        if($request->hasFile('image') ){
+            $image = $request->image;
+            $new_image = time() . '-' . $image->getClientOriginalName();
+            $image->StoreAs('employees', $new_image, 'public');
+            $data['image'] =  $new_image;
+        }
+        $employee->update($date);
+        return redirect()->route('employees.index')->with('message','Employee Updated Successfully')->with('type','success');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $employee)
     {
-        //
+        Storage::disk('public')->delete("blogs/" . $employee->image);
+        $employee->delete();
+        return redirect()->route('employees.index')->with('message', 'Employee Deleted successfully.')->with('type','success');
+        
     }
 }

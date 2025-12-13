@@ -6,35 +6,37 @@
 
     <nav class="flex-1 px-4 space-y-2">
 
-        {{-- @if (auth()->user()->role === 'admin') --}}
-        <a href="#" class="menu-item">
-            <i class="fas fa-chart-line mr-3"></i> Dashboard
-        </a>
+        @if (auth()->check() && auth()->user()->role === 'admin')
+            <a href="{{ route('dashboard') }}" class="menu-item">
+                <i class="fas fa-chart-line mr-3"></i> Dashboard
+            </a>
 
-        <a href="{{ route('employees.index') }}" class="menu-item">
-            <i class="fas fa-user-tie mr-3"></i> Employees
-        </a>
+            <a href="{{ route('employees.index') }}" class="menu-item">
+                <i class="fas fa-user-tie mr-3"></i> Employees
+            </a>
+            <a href="{{ route('departments.index') }}" class="menu-item">
+                <i class="fas fa-building mr-3"></i> Departments
 
-        <a href="{{ route('tasks.index') }}" class="menu-item">
-            <i class="fas fa-tasks mr-3"></i> Tasks
-        </a>
+                <a href="{{ route('tasks.index') }}" class="menu-item">
+                    <i class="fas fa-tasks mr-3"></i> Tasks
+                </a>
 
-        <a href="#" class="menu-item">
-            <i class="fas fa-clipboard-list mr-3"></i> Attendance
-        </a>
-        {{-- @else --}}
-        <a href="#" class="menu-item">
-            <i class="fas fa-chart-bar mr-3"></i> Dashboard
-        </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-clipboard-list mr-3"></i> Attendance
+                </a>
+            @elseif(auth()->check())
+                <a href="{{ route('dashboard') }}" class="menu-item">
+                    <i class="fas fa-chart-bar mr-3"></i> Dashboard
+                </a>
 
-        <a href="#" class="menu-item">
-            <i class="fas fa-clock mr-3"></i> Attendance
-        </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-clock mr-3"></i> Attendance
+                </a>
 
-        <a href="{{ route('tasks.index') }}" class="menu-item">
-            <i class="fas fa-clipboard-check mr-3"></i> My Tasks
-        </a>
-        {{-- @endif --}}
+                <a href="{{ route('tasks.index') }}" class="menu-item">
+                    <i class="fas fa-clipboard-check mr-3"></i> My Tasks
+                </a>
+        @endif
 
     </nav>
 

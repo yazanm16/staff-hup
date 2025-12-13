@@ -13,8 +13,8 @@ Route::get('/', function () {
 
 Route::get('/dashboard',[DashboardController::class,'index' ])->name('dashboard');
 
-Route::resource('departments', DepartmentController::class);
-Route::resource('employees', EmployeeController::class);
+Route::middleware(['auth','role:admin'])->resource('departments', DepartmentController::class);
+Route::middleware(['auth','role:admin'])->resource('employees', EmployeeController::class);
 Route::resource('tasks', TaskController::class);
 
 

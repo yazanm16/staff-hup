@@ -19,7 +19,7 @@
             </a>
         </div>
 
-        <!-- Search and Filter -->
+        {{-- <!-- Search and Filter -->
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1">
@@ -32,19 +32,32 @@
                 <div class="flex gap-2">
                     <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option>All Departments</option>
-                        <option>Engineering</option>
-                        <option>Marketing</option>
-                        <option>Sales</option>
+                        @if (count($departments) > 0)
+                            @foreach ($departments as $department)
+                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                     <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>All Status</option>
+                        <option>All Roles</option>
                         <option>Active</option>
                         <option>Inactive</option>
                     </select>
                 </div>
             </div>
-        </div>
-
+        </div> --}}
+        @if (session('message'))
+            <div
+                class="mb-4 px-4 py-3 rounded-lg
+        @if (session('type') === 'success') bg-green-100 text-green-800
+        @elseif (session('type') === 'warning')
+            bg-yellow-100 text-yellow-800
+        @else
+            bg-red-100 text-red-800 @endif
+    ">
+                {{ session('message') }}
+            </div>
+        @endif
         <!-- Employees Table -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
@@ -64,61 +77,70 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        @for ($i = 0; $i < 8; $i++)
-                            <tr>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div
-                                            class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fas fa-user text-gray-600"></i>
+                        @if (count($users) > 0)
+                            @foreach ($users as $user)
+                                <tr>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                                @if ($user->image && file_exists(public_path('storage/employees/' . $user->image)))
+                                                    <img class="w-full h-full object-cover"
+                                                        src="{{ asset('storage/employees/' . $user->image) }}"
+                                                        alt="User Image">
+                                                @else
+                                                    <i class="fas fa-user text-blue-600"></i>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <p class="font-medium">{{ $user->name }}</p>
+                                                <p class="text-sm text-gray-500">{{ $user->email }}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="font-medium">John Doe</p>
-                                            <p class="text-sm text-gray-500">john@example.com</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{{ $user->department->name ?? 'No Department' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4">{{ $user->position }}</td>
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">{{ $user->role }}</span>
+                                    </td>
+
+                                    {{-- Action --}}
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <a href="{{ route('employees.edit', $user) }}"
+                                                class="text-blue-600 hover:text-blue-900">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('employees.destroy', $user) }}" method="POST"
+                                                onsubmit="return confirm('Are you sure to delete this Employee {{ $user->name }}?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            <a href="#" class="text-gray-600 hover:text-gray-900">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Engineering</span>
-                                </td>
-                                <td class="px-6 py-4">Senior Developer</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('employees.edit', 1) }}"
-                                            class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button class="text-red-600 hover:text-red-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <a href="#" class="text-gray-600 hover:text-gray-900">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endfor
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t flex justify-between items-center">
-                <div class="text-sm text-gray-700">
-                    Showing 1 to 8 of 142 results
-                </div>
-                <div class="flex space-x-2">
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">&laquo;</button>
-                    <button class="px-3 py-1 border rounded bg-blue-600 text-white">1</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">2</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">3</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">&raquo;</button>
-                </div>
+            <div class="px-6 py-4 border-t">
+                {{ $users->links('vendor.pagination.tailwind') }}
             </div>
+
         </div>
     </div>
 @endsection

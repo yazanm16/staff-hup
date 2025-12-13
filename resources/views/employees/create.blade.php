@@ -6,11 +6,6 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
-        @if (session('EmployeeCreateStatus'))
-            <div class="alert alert-success">
-                {{ session('EmployeeCreateStatus') }}
-            </div>
-        @endif
         <div class="bg-white rounded-lg shadow">
             <div class="px-6 py-4 border-b">
                 <h3 class="font-semibold text-gray-800">Employee Information</h3>
