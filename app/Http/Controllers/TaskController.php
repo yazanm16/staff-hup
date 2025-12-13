@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -11,7 +15,8 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
+        $tasks= Task::all();
+        return view('tasks.index',compact('tasks'));
     }
 
     /**
@@ -19,15 +24,20 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        $users = User::get();
+        
+        return view('tasks.create', compact('users'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateTaskRequest $request)
     {
-        //
+       $data= $request->validated();
+        $data['status'] = 'Pending';
+        Task::create($data);
+        return redirect()->route('tasks.index')->with('message','Task Created Successfully')->with('type','success');
     }
 
     /**
@@ -41,24 +51,33 @@ class TaskController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Task $task)
     {
-        //
+        $users = User::get();
+        return view('tasks.edit',compact('task','users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        
+        $data= $request->validated();
+        $task->update($data);
+        return redirect()->route('tasks.index')->with('message','Task Updated Successfully')->with('type','success');
+
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Task $task)
     {
-        //
+        $task->update(['user_id' => null]);
+        $task->delete();
+        return redirect()->route('tasks.index')->with('message', 'Task deleted successfully.')->with('type','success');
+        
     }
 }

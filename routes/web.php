@@ -12,6 +12,8 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard',[DashboardController::class,'index' ])->name('dashboard');
+Route::get('/dashboard/admin',[DashboardController::class,'admin' ])->name('dashboard.admin');
+Route::get('/dashboard/employee',[DashboardController::class,'employee' ])->name('dashboard.employee');
 
 Route::middleware(['auth','role:admin'])->resource('departments', DepartmentController::class);
 Route::middleware(['auth','role:admin'])->resource('employees', EmployeeController::class);

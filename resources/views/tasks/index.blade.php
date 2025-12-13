@@ -21,9 +21,10 @@
                     </a>
                 </div>
             @endif
+
         </div>
 
-        <!-- Tabs -->
+        {{-- <!-- Tabs -->
         <div class="border-b">
             <nav class="flex space-x-8">
                 <a href="#" class="py-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium">
@@ -39,9 +40,21 @@
                     Overdue (2)
                 </a>
             </nav>
-        </div>
+        </div> --}}
 
         <!-- Tasks Table -->
+        @if (session('message'))
+            <div
+                class="mb-4 px-4 py-3 rounded-lg
+        @if (session('type') === 'success') bg-green-100 text-green-800
+        @elseif (session('type') === 'warning')
+            bg-yellow-100 text-yellow-800
+        @else
+            bg-red-100 text-red-800 @endif
+    ">
+                {{ session('message') }}
+            </div>
+        @endif
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -54,7 +67,8 @@
                                     Assigned To</th>
                             @endif
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Priority</th>
+                                Created
+                                AT</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due
                                 Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -64,61 +78,69 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        @for ($i = 0; $i < 6; $i++)
-                            <tr>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <p class="font-medium">Complete project documentation</p>
-                                        <p class="text-sm text-gray-500 mt-1">Write and submit final project documentation
-                                        </p>
-                                    </div>
-                                </td>
-                                @if (auth()->user()->role === 'admin')
+                        @if (count($tasks) > 0)
+                            @foreach ($tasks as $task)
+                                <tr>
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-                                                <i class="fas fa-user text-gray-600 text-sm"></i>
-                                            </div>
-                                            <span>John Doe</span>
+                                        <div>
+                                            <p class="font-medium">{{ $task->title }}</p>
+                                            <p class="text-sm text-gray-500 mt-1">{{ $task->description }}
+                                            </p>
                                         </div>
                                     </td>
-                                @endif
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800">High</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="{{ $i % 3 == 0 ? 'text-red-600' : 'text-gray-700' }}">Dec 15, 2023</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if ($i % 3 == 0)
-                                        <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">In
-                                            Progress</span>
-                                    @elseif($i % 3 == 1)
-                                        <span
-                                            class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Pending</span>
+                                    @if (auth()->user()->role === 'admin')
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                                                    <i class="fas fa-user text-gray-600 text-sm"></i>
+                                                </div>
+                                                <span>{{ $task->User->name }}</span>
+                                            </div>
+                                        </td>
                                     @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-red-600 hover:text-red-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        @if (auth()->user()->role === 'employee')
+                                    <td class="px-6 py-4">
+                                        <span class="text-gray-700 ">{{ $task->created_at->format('Y-m-d') }}</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="text-gray-700 ">{{ $task->due_date }}</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @if ($task->status == 'In-Progress')
+                                            <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">In
+                                                Progress</span>
+                                        @elseif($task->status == 'Completed')
+                                            <span
+                                                class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
+                                        @else
+                                            <span
+                                                class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Pending</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <a href="{{ route('tasks.edit', $task) }}"
+                                                class="text-blue-600 hover:text-blue-900">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST"
+                                                onsubmit="return confirm('Are you sure to delete this {{ $task->name }} Task ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            {{-- @if (auth()->user()->role === 'employee') 
                                             <button class="text-green-600 hover:text-green-900">
                                                 <i class="fas fa-check"></i>
                                             </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endfor
+                                             @endif --}}
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
                     </tbody>
                 </table>
             </div>

@@ -13,11 +13,6 @@
                     <span class="text-sm text-gray-500">ID:{{ $department->id }}</span>
                 </div>
             </div>
-            @if (session('DepartmentUpdateStatus'))
-                <div class="alert alert-success">
-                    {{ session('DepartmentUpdateStatus') }}
-                </div>
-            @endif
             <form method="POST" action="{{ route('departments.update', $department) }}" class="p-6 space-y-6"
                 enctype="multipart/form-data">
                 @csrf
