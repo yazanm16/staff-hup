@@ -25,15 +25,15 @@
                 <i class="fas fa-tasks mr-3"></i> Tasks
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="#" :active="false">
+            <x-responsive-nav-link href="{{ route('attendances.index') }}" :active="request()->routeIs('attendances.index')">
                 <i class="fas fa-clipboard-list mr-3"></i> Attendance
             </x-responsive-nav-link>
         @elseif (auth()->check())
-            <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+            <x-responsive-nav-link href="{{ route('dashboard.employee') }}" :active="request()->routeIs('dashboard.employee')">
                 <i class="fas fa-chart-bar mr-3"></i> Dashboard
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="#" :active="false">
+            <x-responsive-nav-link href="{{ route('attendances.index') }}" :active="request()->routeIs('attendances.index')">
                 <i class="fas fa-clock mr-3"></i> Attendance
             </x-responsive-nav-link>
 
