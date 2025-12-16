@@ -25,7 +25,7 @@
                 <i class="fas fa-tasks mr-3"></i> Tasks
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('attendances.index') }}" :active="request()->routeIs('attendances.index')">
+            <x-responsive-nav-link href="{{ route('attendances.reports') }}" :active="request()->routeIs('attendances.index')">
                 <i class="fas fa-clipboard-list mr-3"></i> Attendance
             </x-responsive-nav-link>
         @elseif (auth()->check())
@@ -37,7 +37,7 @@
                 <i class="fas fa-clock mr-3"></i> Attendance
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('tasks.index') }}" :active="request()->routeIs('tasks.*')">
+            <x-responsive-nav-link href="{{ route('tasks.my') }}" :active="request()->routeIs('tasks.*')">
                 <i class="fas fa-clipboard-check mr-3"></i> My Tasks
             </x-responsive-nav-link>
         @endif

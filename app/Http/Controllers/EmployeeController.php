@@ -69,14 +69,17 @@ class EmployeeController extends Controller
      */
     public function update(UpdateEmployeeRequest $request, User $employee)
     {
-        $date=$request->validated();
+        $data=$request->validated();
         if($request->hasFile('image') ){
+            if ($employee->image && Storage::disk('public')->exists('employees/' . $employee->image)) {
+            Storage::disk('public')->delete('employees/' . $employee->image);
+        }
             $image = $request->image;
             $new_image = time() . '-' . $image->getClientOriginalName();
             $image->StoreAs('employees', $new_image, 'public');
             $data['image'] =  $new_image;
         }
-        $employee->update($date);
+        $employee->update($data);
         return redirect()->route('employees.index')->with('message','Employee Updated Successfully')->with('type','success');
     }
 
@@ -85,7 +88,12 @@ class EmployeeController extends Controller
      */
     public function destroy(User $employee)
     {
-        Storage::disk('public')->delete("blogs/" . $employee->image);
+        if($employee->image){
+            Storage::disk('public')->delete("employees/" . $employee->image);
+        }
+        if($employee->tasks){
+            $employee->tasks()->update(['user_id' => null]);
+        }
         $employee->delete();
         return redirect()->route('employees.index')->with('message', 'Employee Deleted successfully.')->with('type','success');
         

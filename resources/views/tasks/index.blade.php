@@ -93,9 +93,15 @@
                                             <div class="flex items-center">
                                                 <div
                                                     class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-                                                    <i class="fas fa-user text-gray-600 text-sm"></i>
+                                                    @if (!empty($task->User->image) && file_exists(public_path('storage/employees/' . $task->User->image)))
+                                                        <img class="w-full h-full object-cover"
+                                                            src="{{ asset('storage/employees/' . $task->User->image) }}"
+                                                            alt="User Image">
+                                                    @else
+                                                        <i class="fas fa-user text-blue-600"></i>
+                                                    @endif
                                                 </div>
-                                                <span>{{ $task->User->name }}</span>
+                                                <span>{{ $task->User->name ?? 'Null, Please change Employee' }}</span>
                                             </div>
                                         </td>
                                     @endif

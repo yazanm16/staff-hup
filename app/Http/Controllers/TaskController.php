@@ -6,6 +6,7 @@ use App\Http\Requests\CreateTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -15,7 +16,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks= Task::all();
+        $tasks= Task::orderBy('due_date','asc')->paginate(5);
         return view('tasks.index',compact('tasks'));
     }
 
@@ -80,4 +81,29 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('message', 'Task deleted successfully.')->with('type','success');
         
     }
+    public function myTasks()
+    {
+        $tasks = Task::where('user_id', Auth::id())->orderBy('due_date', 'asc')->paginate(5);
+        return view('tasks.myTasks', compact('tasks'));
+
+        
+    }
+    public function updateStatus(Request $request, Task $task)
+    {
+    
+    if ($task->user_id !== Auth::id()) {
+        abort(403);
+    }
+
+    $request->validate([
+        'status' => 'required|in:Pending,In-Progress,Completed',
+    ]);
+
+    $task->update([
+        'status' => $request->status,
+    ]);
+
+    return back()->with('message', 'Task status updated successfully')
+                 ->with('type', 'success');
+    }   
 }

@@ -123,9 +123,9 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                            <a href="#" class="text-gray-600 hover:text-gray-900">
+                                            {{-- <a href="#" class="text-gray-600 hover:text-gray-900">
                                                 <i class="fas fa-eye"></i>
-                                            </a>
+                                            </a> --}}
                                         </div>
                                     </td>
                                 </tr>

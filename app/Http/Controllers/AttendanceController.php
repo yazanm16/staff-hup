@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Department;
+use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
@@ -14,10 +18,11 @@ class AttendanceController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
+    {   $startOfWeek = now()->startOfWeek(Carbon::SATURDAY);
+        $endOfWeek = now()->endOfWeek(Carbon::FRIDAY);
         $id=Auth::id();
         $attendance=Attendance::where("user_id", $id)->whereDate('check_in',now()->toDateString())->whereNull('check_out')->first();
-        $attendances=Attendance::where("user_id", $id)->get();
+        $attendances=Attendance::where("user_id", $id)->whereBetween('date',[$startOfWeek, $endOfWeek])->get();
         return view('attendances.index',compact('attendance','attendances'));
     }
 
@@ -107,40 +112,65 @@ class AttendanceController extends Controller
         return redirect()->route('attendances.index')->with('message','Checked out at ' . $now->toDateTimeString() . ' — Hours: ' . $hours)->with('type','success');
 
     }
+
+
+
+public function reports(Request $request)
+{
+
+    $departments = Department::orderBy('name')->get();
+    $users = User::orderBy('name')->get();
+    $from = $request->input('from', Carbon::now()->subDays(7)->toDateString());
+    $to   = $request->input('to', Carbon::now()->toDateString());
+    $user_id = $request->input('user_id');
+    $department_id = $request->input('department_id');
+    $baseQuery = Attendance::with(['user.department'])->whereBetween('date', [$from, $to]);
+
+    if (!empty($user_id)) {
+        $baseQuery->where('user_id', $user_id);
+    }
+    if (!empty($department_id)) {
+        $baseQuery->whereHas('user', function ($q) use ($department_id) {
+            $q->where('department_id', $department_id);
+        });
+    }
+
+    $attendances = (clone $baseQuery)->orderBy('date', 'desc')->paginate(8)->withQueryString();
+
+    $presentDays = (clone $baseQuery)->whereNotNull('check_in')->distinct('date')->count('date');
+
+    $lateArrivals = (clone $baseQuery)->whereTime('check_in', '>', '09:00:00')->count();
+
+    $totalHours = (clone $baseQuery)->sum('work_hours');
+
+    $avgHours = $presentDays > 0? round($totalHours / $presentDays, 2): 0;
+
+    $period = CarbonPeriod::create($from, $to);
+
+    $workingDays = $period->filter(function ($date) {
+        return !in_array($date->dayOfWeek, [
+        Carbon::FRIDAY,
+        Carbon::SATURDAY
+        ]);
+    })->count();
+
+    $absentDays = max($workingDays - $presentDays, 0);
+
+    return view('attendances.report', compact(
+        'attendances',
+        'from',
+        'to',
+        'departments',
+        'users',
+        'presentDays',
+        'lateArrivals',
+        'avgHours',
+        'absentDays'
+    ));
+}
+
     
 }
     
-//     namespace App\Http\Controllers;
 
-// use App\Models\Attendance;
-// use Illuminate\Http\Request;
-// use Carbon\Carbon;
-
-// class AttendanceController extends Controller
-// {
-//     // Admin: index list of attendances
-
-//     // Employee: show check-in form/button
-
-
-
-
-//     
-
-//     // Admin report (مثال: تجميع الساعات لأسبوع محدد)
-//     public function report(Request $request)
-//     {
-//         // استقبل تاريخ بداية ونهاية أو افتراضي آخر 7 أيام
-//         $from = $request->input('from', now()->subDays(7)->toDateString());
-//         $to = $request->input('to', now()->toDateString());
-
-//         $report = Attendance::selectRaw('user_id, SUM(work_hours) as total_hours')
-//             ->whereBetween('date', [$from, $to])
-//             ->groupBy('user_id')
-//             ->with('user')
-//             ->get();
-
-//         return view('attendance.report', compact('report','from','to'));
-//     }
-// }
 
