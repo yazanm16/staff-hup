@@ -4,7 +4,6 @@
         <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
             <i class="fas fa-users mr-1"></i> EmpManage
         </x-responsive-nav-link>
-        {{-- <i class="fas fa-users mr-1"></i> EmpManage --}}
     </div>
 
     <nav class="flex-1 px-4 space-y-2">
@@ -14,18 +13,18 @@
                 <i class="fas fa-chart-line mr-3"></i> Dashboard
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('employees.index') }}" :active="request()->routeIs('employees.*')">
+            <x-responsive-nav-link href="{{ route('employees.index') }}" :active="request()->routeIs('employees.index')">
                 <i class="fas fa-user-tie mr-3"></i> Employees
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('departments.index') }}" :active="request()->routeIs('departments.*')">
+            <x-responsive-nav-link href="{{ route('departments.index') }}" :active="request()->routeIs('departments.index')">
                 <i class="fas fa-building mr-3"></i> Departments
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('tasks.index') }}" :active="request()->routeIs('tasks.*')">
+            <x-responsive-nav-link href="{{ route('tasks.index') }}" :active="request()->routeIs('tasks.index')">
                 <i class="fas fa-tasks mr-3"></i> Tasks
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('attendances.reports') }}" :active="request()->routeIs('attendances.index')">
+            <x-responsive-nav-link href="{{ route('attendances.reports') }}" :active="request()->routeIs('attendances.reports')">
                 <i class="fas fa-clipboard-list mr-3"></i> Attendance
             </x-responsive-nav-link>
         @elseif (auth()->check())
@@ -37,7 +36,7 @@
                 <i class="fas fa-clock mr-3"></i> Attendance
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('tasks.my') }}" :active="request()->routeIs('tasks.*')">
+            <x-responsive-nav-link href="{{ route('tasks.my') }}" :active="request()->routeIs('tasks.my')">
                 <i class="fas fa-clipboard-check mr-3"></i> My Tasks
             </x-responsive-nav-link>
         @endif

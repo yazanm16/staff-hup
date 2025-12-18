@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\UpdateStatusRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\User;
@@ -41,13 +42,6 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('message','Task Created Successfully')->with('type','success');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -88,22 +82,19 @@ class TaskController extends Controller
 
         
     }
-    public function updateStatus(Request $request, Task $task)
+    public function updateStatus(UpdateStatusRequest $request, Task $task)
     {
     
     if ($task->user_id !== Auth::id()) {
         abort(403);
     }
 
-    $request->validate([
-        'status' => 'required|in:Pending,In-Progress,Completed',
-    ]);
+        $data=$request->validated();
 
     $task->update([
-        'status' => $request->status,
+        'status' => $data['status']
     ]);
 
-    return back()->with('message', 'Task status updated successfully')
-                 ->with('type', 'success');
+    return back()->with('message', 'Task status updated successfully')->with('type', 'success');
     }   
 }

@@ -30,21 +30,13 @@ class DepartmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateDepartmentRequest $request)
-    {
+    public function store(CreateDepartmentRequest $request){
         $date=$request->validated();
         Department::create($date);
         return redirect()->route('departments.index')->with('message', 'Department created successfully.')->with('type','success');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
+    
     /**
      * Show the form for editing the specified resource.
      */
@@ -56,8 +48,7 @@ class DepartmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateDepartmentRequest $request, Department $department)
-    {
+    public function update(UpdateDepartmentRequest $request, Department $department){
         $date=$request->validated();
         $department->update($date);
         return redirect()->route('departments.index')->with('message', 'Department updated successfully.')->with('type','success');
@@ -67,13 +58,12 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Department $department)
-    {
-        
-            if ($department->users()->exists()) {
-                return redirect()->route('departments.index')->with('message', 'You can not delete this department because there is an Employees at this department')->with('type','waring');
-            }
-            $department->delete();
-            return redirect()->route('departments.index')->with('message', 'Department deleted successfully.')->with('type','success');
+    public function destroy(Department $department){
+
+    if ($department->users()->exists()) {
+        return redirect()->route('departments.index')->with('message', 'You can not delete this department because there is an Employees at this department')->with('type','waring');
+    }
+    $department->delete();
+    return redirect()->route('departments.index')->with('message', 'Department deleted successfully.')->with('type','success');
     }
 }

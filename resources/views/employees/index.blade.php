@@ -19,33 +19,6 @@
             </a>
         </div>
 
-        {{-- <!-- Search and Filter -->
-        <div class="bg-white rounded-lg shadow p-4">
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" placeholder="Search employees..."
-                            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>All Departments</option>
-                        @if (count($departments) > 0)
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                    <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>All Roles</option>
-                        <option>Active</option>
-                        <option>Inactive</option>
-                    </select>
-                </div>
-            </div>
-        </div> --}}
         @if (session('message'))
             <div
                 class="mb-4 px-4 py-3 rounded-lg
@@ -123,9 +96,6 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- <a href="#" class="text-gray-600 hover:text-gray-900">
-                                                <i class="fas fa-eye"></i>
-                                            </a> --}}
                                         </div>
                                     </td>
                                 </tr>

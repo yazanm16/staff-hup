@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
+
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
@@ -18,61 +19,16 @@ class AttendanceController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   $startOfWeek = now()->startOfWeek(Carbon::SATURDAY);
+    {
+        $startOfWeek = now()->startOfWeek(Carbon::SATURDAY);
         $endOfWeek = now()->endOfWeek(Carbon::FRIDAY);
-        $id=Auth::id();
-        $attendance=Attendance::where("user_id", $id)->whereDate('check_in',now()->toDateString())->whereNull('check_out')->first();
-        $attendances=Attendance::where("user_id", $id)->whereBetween('date',[$startOfWeek, $endOfWeek])->get();
-        return view('attendances.index',compact('attendance','attendances'));
+        $id = Auth::id();
+        $attendance = Attendance::where("user_id", $id)->whereDate('check_in', now()->toDateString())->whereNull('check_out')->first();
+        $attendances = Attendance::where("user_id", $id)->whereBetween('date', [$startOfWeek, $endOfWeek])->get();
+        return view('attendances.index', compact('attendance', 'attendances'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-    
-    /**
-     * Remove the specified resource from storage.
-    */
-    public function destroy(string $id)
-    {
-        //
-    }
+ 
     public function showCheckinForm()
     {
         return view('attendances.checkin');
@@ -85,7 +41,7 @@ class AttendanceController extends Controller
         $today = $now->toDateString();
         $existing = Attendance::where('user_id', $user->id)->where('date', $today)->first();
         if ($existing && $existing->check_in && !$existing->check_out) {
-            return redirect()->route('attendances.index')->with('message', 'You already checked in and not checked out yet.')->with('type','warning');
+            return redirect()->route('attendances.index')->with('message', 'You already checked in and not checked out yet.')->with('type', 'warning');
         }
 
         Attendance::create([
@@ -93,84 +49,119 @@ class AttendanceController extends Controller
             'check_in' => $now,
             'date' => $today,
         ]);
-            return redirect()->route('attendances.index')->with('message', 'You checked in now.')->with('type','success');
+        return redirect()->route('attendances.index')->with('message', 'You checked in now.')->with('type', 'success');
 
-        
+
     }
     public function checkout(Request $request){
         $user = $request->user();
-        $now= Carbon::now('Asia/Gaza');
+        $now = Carbon::now('Asia/Gaza');
         $today = $now->toDateString();
         $attendance = Attendance::where('user_id', $user->id)->where('date', $today)->whereNotNull('check_in')->whereNull('check_out')->first();
-        if(!$attendance){
-            return redirect()->route('attendances.index')->with('message','No active check-in found for today.')->with('type','waring');
+        if (!$attendance) {
+            return redirect()->route('attendances.index')->with('message', 'No active check-in found for today.')->with('type', 'waring');
         }
-        $attendance->check_out=$now;
+        $attendance->check_out = $now;
         $hours = round(($attendance->check_out->timestamp - $attendance->check_in->timestamp) / 3600, 2);
         $attendance->work_hours = $hours;
         $attendance->save();
-        return redirect()->route('attendances.index')->with('message','Checked out at ' . $now->toDateTimeString() . ' — Hours: ' . $hours)->with('type','success');
+        return redirect()->route('attendances.index')->with('message', 'Checked out at ' . $now->toDateTimeString() . ' — Hours: ' . $hours)->with('type', 'success');
 
     }
 
+    public function reports(Request $request)
+    {
 
+        $departments = Department::orderBy('name')->get();
+        $users = User::orderBy('name')->get();
+        $from = $request->input('from', Carbon::now()->subDays(7)->toDateString());
+        $to = $request->input('to', Carbon::now()->toDateString());
+        $user_id = $request->input('user_id');
+        $department_id = $request->input('department_id');
+        $baseQuery = Attendance::with(['user.department'])->whereBetween('date', [$from, $to]);
 
-public function reports(Request $request)
-{
+        if (!empty($user_id)) {
+            $baseQuery->where('user_id', $user_id);
+        }
+        if (!empty($department_id)) {
+            $baseQuery->whereHas('user', function ($q) use ($department_id) {
+                $q->where('department_id', $department_id);
+            });
+        }
 
-    $departments = Department::orderBy('name')->get();
-    $users = User::orderBy('name')->get();
-    $from = $request->input('from', Carbon::now()->subDays(7)->toDateString());
-    $to   = $request->input('to', Carbon::now()->toDateString());
-    $user_id = $request->input('user_id');
-    $department_id = $request->input('department_id');
-    $baseQuery = Attendance::with(['user.department'])->whereBetween('date', [$from, $to]);
+        $attendances = (clone $baseQuery)->orderBy('date', 'desc')->paginate(8)->withQueryString();
 
-    if (!empty($user_id)) {
-        $baseQuery->where('user_id', $user_id);
+        $presentDays = (clone $baseQuery)->whereNotNull('check_in')->distinct('date')->count('date');
+
+        $lateArrivals = (clone $baseQuery)->whereTime('check_in', '>', '09:00:00')->count();
+
+        $totalHours = (clone $baseQuery)->sum('work_hours');
+
+        $avgHours = $presentDays > 0 ? round($totalHours / $presentDays, 2) : 0;
+
+        $period = CarbonPeriod::create($from, $to);
+
+        $workingDays = $period->filter(function ($date) {
+            return !in_array($date->dayOfWeek, [
+                Carbon::FRIDAY,
+                Carbon::SATURDAY
+            ]);
+        })->count();
+
+        $absentDays = max($workingDays - $presentDays, 0);
+
+        return view('attendances.report', compact(
+            'attendances',
+            'from',
+            'to',
+            'departments',
+            'users',
+            'presentDays',
+            'lateArrivals',
+            'avgHours',
+            'absentDays'
+        ));
     }
-    if (!empty($department_id)) {
-        $baseQuery->whereHas('user', function ($q) use ($department_id) {
-            $q->where('department_id', $department_id);
-        });
+
+    public function exportCsv(Request $request)
+    {
+        $from = $request->input('from', Carbon::now()->subDays(7)->toDateString());
+        $to = $request->input('to', Carbon::now()->toDateString());
+
+        $attendances = Attendance::with(['user.department'])
+            ->whereBetween('date', [$from, $to])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $csvData = "\xEF\xBB\xBF";
+        $csvData .= "User,Department,Date,Check In,Check Out,Work Hours\n";
+
+        foreach ($attendances as $attendance) {
+
+            $date = $attendance->date
+                ? '="' . Carbon::parse($attendance->date)->format('Y-m-d') . '"'
+                : '""';
+
+            $checkIn = $attendance->check_in
+                ? '="' . Carbon::parse($attendance->check_in)->format('h:i A') . '"'
+                : '""';
+
+            $checkOut = $attendance->check_out
+                ? '="' . Carbon::parse($attendance->check_out)->format('h:i A') . '"'
+                : '""';
+
+            $csvData .= "\"{$attendance->user->name}\","
+                . "\"{$attendance->user->department->name}\","
+                . "{$date},"
+                . "{$checkIn},"
+                . "{$checkOut},"
+                . "\"{$attendance->work_hours}\"\n";
+        }
+
+        $fileName = "attendance_report_{$from}_to_{$to}.csv";
+
+        return response($csvData)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', "attachment; filename={$fileName}");
     }
-
-    $attendances = (clone $baseQuery)->orderBy('date', 'desc')->paginate(8)->withQueryString();
-
-    $presentDays = (clone $baseQuery)->whereNotNull('check_in')->distinct('date')->count('date');
-
-    $lateArrivals = (clone $baseQuery)->whereTime('check_in', '>', '09:00:00')->count();
-
-    $totalHours = (clone $baseQuery)->sum('work_hours');
-
-    $avgHours = $presentDays > 0? round($totalHours / $presentDays, 2): 0;
-
-    $period = CarbonPeriod::create($from, $to);
-
-    $workingDays = $period->filter(function ($date) {
-        return !in_array($date->dayOfWeek, [
-        Carbon::FRIDAY,
-        Carbon::SATURDAY
-        ]);
-    })->count();
-
-    $absentDays = max($workingDays - $presentDays, 0);
-
-    return view('attendances.report', compact(
-        'attendances',
-        'from',
-        'to',
-        'departments',
-        'users',
-        'presentDays',
-        'lateArrivals',
-        'avgHours',
-        'absentDays'
-    ));
 }
-
-    
-}
-    
-
-

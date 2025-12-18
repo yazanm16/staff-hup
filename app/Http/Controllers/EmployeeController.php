@@ -17,7 +17,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $users=User::paginate(2);
+        $users=User::paginate(5);
         $departments = Department::get();
         return view('employees.index',compact('users','departments'));
     }
@@ -34,8 +34,7 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateEmployeeRequest $request)
-    {
+    public function store(CreateEmployeeRequest $request){
         $data=$request->validated();
         if($request->hasFile('image')){
             $image = $request->image;
@@ -47,13 +46,6 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('message','Employee created successfully.')->with('type','success');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -88,11 +80,20 @@ class EmployeeController extends Controller
      */
     public function destroy(User $employee)
     {
+        if($employee->tasks){
+            if($employee->tasks()->where('status', 'Completed')->exists()){
+                $employee->tasks()->delete();
+            }
+            else if($employee->tasks()->where('status', 'In-Progress')->exists()){
+                return redirect()->route('employees.index')->with('message', 'Can not delete employee with tasks In Progress.')->with('type','warning');
+            }
+            $employee->tasks()->update(['user_id' => null]);
+        }
+        if ($employee->attendances()->exists()) {
+            $employee->attendances()->delete();
+        }
         if($employee->image){
             Storage::disk('public')->delete("employees/" . $employee->image);
-        }
-        if($employee->tasks){
-            $employee->tasks()->update(['user_id' => null]);
         }
         $employee->delete();
         return redirect()->route('employees.index')->with('message', 'Employee Deleted successfully.')->with('type','success');

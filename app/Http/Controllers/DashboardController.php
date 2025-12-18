@@ -16,6 +16,7 @@ class DashboardController extends Controller
     public function index(){
         return view('dashboard.homePage');
     }
+
     public function admin (){
         $users=User::get();
         $tasks=Task::get();
@@ -30,7 +31,6 @@ class DashboardController extends Controller
             $inProgressPercent = round(($inProgressTasks / $totalTask) * 100);
             $pendingPercent    = round(($pendingTasks / $totalTask) * 100);
         }
-
         return view('dashboard.admin',compact('users','completedTasks','inProgressTasks','todayPresent','pendingTasks','completedPercent','inProgressPercent','pendingPercent'));
     }
     public function employee (){

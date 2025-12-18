@@ -27,28 +27,42 @@
 
             @auth
                 <!-- USER INFO -->
-                <div class="flex items-center">
-                    <div class="mr-3 text-right hidden md:block">
-                        <p class="text-sm font-semibold">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500 capitalize">{{ auth()->user()->role }}</p>
+                <div class="relative">
+
+                    <button onclick="document.getElementById('userMenu').classList.toggle('hidden')"
+                        class="flex items-center focus:outline-none">
+
+                        <div class="mr-3 text-right hidden md:block">
+                            <p class="text-sm font-semibold">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500 capitalize">{{ auth()->user()->role }}</p>
+                        </div>
+
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
+                            @if (auth()->user()->image && file_exists(public_path('storage/employees/' . auth()->user()->image)))
+                                <img class="w-full h-full object-cover"
+                                    src="{{ asset('storage/employees/' . auth()->user()->image) }}">
+                            @else
+                                <i class="fas fa-user text-blue-600"></i>
+                            @endif
+                        </div>
+                    </button>
+
+                    <!-- DROPDOWN -->
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border z-50">
+
+                        <a href="{{ route('profile.edit') }}"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user mr-2"></i> Profile
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </button>
+                        </form>
                     </div>
 
-                    <div class="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
-                        @if (auth()->user()->image && file_exists(public_path('storage/employees/' . auth()->user()->image)))
-                            <img class="w-full h-full object-cover"
-                                src="{{ asset('storage/employees/' . auth()->user()->image) }}" alt="User Image">
-                        @else
-                            <i class="fas fa-user text-blue-600"></i>
-                        @endif
-                    </div>
-
-                    <!-- LOGOUT -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="ml-3 text-red-600 hover:text-red-700">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </form>
                 </div>
             @else
                 <!-- LOGIN -->

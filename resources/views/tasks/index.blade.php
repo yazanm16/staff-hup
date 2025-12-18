@@ -23,25 +23,6 @@
             @endif
 
         </div>
-
-        {{-- <!-- Tabs -->
-        <div class="border-b">
-            <nav class="flex space-x-8">
-                <a href="#" class="py-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium">
-                    All Tasks (32)
-                </a>
-                <a href="#" class="py-3 px-1 text-gray-500 hover:text-gray-700">
-                    In Progress (12)
-                </a>
-                <a href="#" class="py-3 px-1 text-gray-500 hover:text-gray-700">
-                    Completed (18)
-                </a>
-                <a href="#" class="py-3 px-1 text-gray-500 hover:text-gray-700">
-                    Overdue (2)
-                </a>
-            </nav>
-        </div> --}}
-
         <!-- Tasks Table -->
         @if (session('message'))
             <div
@@ -137,11 +118,6 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- @if (auth()->user()->role === 'employee') 
-                                            <button class="text-green-600 hover:text-green-900">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                             @endif --}}
                                         </div>
                                     </td>
                                 </tr>
@@ -149,6 +125,9 @@
                         @endif
                     </tbody>
                 </table>
+            </div>
+            <div class="px-6 py-4 border-t">
+                {{ $tasks->links('vendor.pagination.tailwind') }}
             </div>
         </div>
     </div>

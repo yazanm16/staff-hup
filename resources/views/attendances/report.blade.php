@@ -121,10 +121,11 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b flex justify-between items-center">
                 <h3 class="font-semibold text-gray-800">Attendance Details</h3>
-                <button class="text-blue-600 hover:text-blue-800 flex items-center">
+                <a href="{{ route('attendances.generateReport', request()->query()) }}"
+                    class="text-blue-600 hover:text-blue-800 flex items-center">
                     <i class="fas fa-download mr-2"></i>
-                    Export CSV000
-                </button>
+                    Export CSV
+                </a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
