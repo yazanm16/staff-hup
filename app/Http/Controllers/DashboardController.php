@@ -26,10 +26,13 @@ class DashboardController extends Controller
         $inProgressTasks = $tasks->where('status','In-Progress')->count();
         $todayPresent=Attendance::whereDate('date',Carbon::today())->whereNotNull('check_in')->count();
         $totalTask = $tasks->count();
+        $completedPercent = 0;
+        $inProgressPercent = 0;
+        $pendingPercent = 0;
         if ($totalTask) {
-            $completedPercent= round(($completed / $totalTask) * 100);
+            $completedPercent = round(($completed / $totalTask) * 100);
             $inProgressPercent = round(($inProgressTasks / $totalTask) * 100);
-            $pendingPercent    = round(($pendingTasks / $totalTask) * 100);
+            $pendingPercent = round(($pendingTasks / $totalTask) * 100);
         }
         return view('dashboard.admin',compact('users','completedTasks','inProgressTasks','todayPresent','pendingTasks','completedPercent','inProgressPercent','pendingPercent'));
     }
