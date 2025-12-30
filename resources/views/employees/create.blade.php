@@ -85,15 +85,26 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Role <span class="text-red-500">*</span>
+                            </label>
+
                             <select name="role" required
-                                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value="{{ old('role') }}">
-                                <option value="employee">Employee</option>
-                                <option value="admin">Admin</option>
+                                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+                                <option value="">Select Role</option>
+
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>
+                                        {{ ucfirst($role->name) }}
+                                    </option>
+                                @endforeach
+
                             </select>
+
                             <x-input-error :messages="$errors->get('role')" class="mt-2" />
                         </div>
+
 
 
                     </div>

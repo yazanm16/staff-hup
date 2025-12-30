@@ -32,13 +32,17 @@ class ProfileController extends Controller
     $data = $request->validated();
 
     if($request->hasFile('image')){
-        if ($user->image && Storage::disk('public')->exists('employees/' . $user->image)) {
-            Storage::disk('public')->delete('employees/' . $user->image);
+        if ($user->photo ) {
+            Storage::disk($user->photo->disk)->delete($user->photo->path);
+            $user->photo->delete();
         }
-        $image = $request->file('image');
-        $new_image = time() . '-' . $image->getClientOriginalName();
-        $image->storeAs('employees', $new_image, 'public');
-        $data['image'] = $new_image;
+        $path=$request->file('image')->store('employees','public');
+        $user->photo()->create([
+        'path' => $path,
+        'disk' => 'public',
+        ]);
+
+        
     }
     $user->fill($data);
     if ($user->isDirty('email')) {
@@ -51,24 +55,4 @@ class ProfileController extends Controller
 }
 
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
-    }
 }

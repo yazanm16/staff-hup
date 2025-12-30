@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
@@ -28,7 +29,8 @@ class EmployeeController extends Controller
     public function create()
     {
         $departments = Department::get();
-        return view('employees.create', compact('departments'));
+        $roles = Role::get();
+        return view('employees.create', compact('departments','roles'));
     }
 
     /**
@@ -36,13 +38,15 @@ class EmployeeController extends Controller
      */
     public function store(CreateEmployeeRequest $request){
         $data=$request->validated();
+        $user=User::create($data);
+        $user->assignRole($request->role);
         if($request->hasFile('image')){
-            $image = $request->image;
-            $new_image = time() . '-' . $image->getClientOriginalName();
-            $image->StoreAs('employees', $new_image, 'public');
-            $data['image'] =  $new_image;
+            $path=$request->file('image')->store('employees','public');
+             $user->photo()->create([
+            'path' => $path,
+            'disk' => 'public',
+        ]);
         }
-        User::create($data);
         return redirect()->route('employees.index')->with('message','Employee created successfully.')->with('type','success');
     }
 
@@ -53,7 +57,8 @@ class EmployeeController extends Controller
     public function edit(User $employee)
     {
         $departments = Department::get();
-        return view('employees.edit',compact('employee','departments'));
+        $roles = Role::get();
+        return view('employees.edit',compact('employee','departments','roles'));
     }
 
     /**
@@ -62,16 +67,19 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, User $employee)
     {
         $data=$request->validated();
-        if($request->hasFile('image') ){
-            if ($employee->image && Storage::disk('public')->exists('employees/' . $employee->image)) {
-            Storage::disk('public')->delete('employees/' . $employee->image);
-        }
-            $image = $request->image;
-            $new_image = time() . '-' . $image->getClientOriginalName();
-            $image->StoreAs('employees', $new_image, 'public');
-            $data['image'] =  $new_image;
-        }
         $employee->update($data);
+        $employee->syncRoles([$request->role]);
+        if($request->hasFile('image') ){
+            if ($employee->photo) {
+                Storage::disk('public')->delete($employee->photo->path);
+                $employee->photo->delete();
+        }
+        $path=$request->file('image')->store('employees','public');
+        $employee->photo()->create([
+        'path' => $path,
+        'disk' => 'public',
+        ]);
+    }
         return redirect()->route('employees.index')->with('message','Employee Updated Successfully')->with('type','success');
     }
 
@@ -92,9 +100,12 @@ class EmployeeController extends Controller
         if ($employee->attendances()->exists()) {
             $employee->attendances()->delete();
         }
-        if($employee->image){
-            Storage::disk('public')->delete("employees/" . $employee->image);
+        if($employee->photo){
+            Storage::disk('public')->delete($employee->photo->path);
+            $employee->photo->delete();
         }
+        $employee->syncRoles([]);
+        $employee->syncPermissions([]);
         $employee->delete();
         return redirect()->route('employees.index')->with('message', 'Employee Deleted successfully.')->with('type','success');
         

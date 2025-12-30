@@ -49,8 +49,8 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Image Profile</label>
-                            @if ($employee->image)
-                                <img src="{{ asset('storage/employees/' . $employee->image) }}"
+                            @if ($employee->photo)
+                                <img src="{{ asset('storage/' . $employee->photo->path) }}"
                                     class="w-20 h-20 rounded-full mb-3 object-cover">
                             @endif
                             <input type="file" name="image"
@@ -89,15 +89,27 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                            <select name="role" required
-                                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value="{{ $employee->role }}">
-                                <option value="employee">Employee</option>
-                                <option value="admin">Admin</option>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Role <span class="text-red-500">*</span>
+                            </label>
+
+                            <select name="role"
+                                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+                                <option value="">Select Role</option>
+
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->name }}"
+                                        {{ $employee->hasRole($role->name) ? 'selected' : '' }}>
+                                        {{ ucfirst($role->name) }}
+                                    </option>
+                                @endforeach
+
                             </select>
+
                             <x-input-error :messages="$errors->get('role')" class="mt-2" />
                         </div>
+
                     </div>
                 </div>
 

@@ -12,7 +12,7 @@
                 <h2 class="text-2xl font-bold text-gray-800">Tasks</h2>
                 <p class="text-gray-600">Manage and track tasks</p>
             </div>
-            @if (auth()->user()->role === 'admin')
+            @role('admin')
                 <div class="flex space-x-3">
                     <a href="{{ route('tasks.create') }}"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
@@ -20,7 +20,7 @@
                         Create Task
                     </a>
                 </div>
-            @endif
+            @endrole
 
         </div>
         <!-- Tasks Table -->
@@ -43,10 +43,10 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task
                             </th>
-                            @if (auth()->user()->role === 'admin')
+                            @role('admin')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Assigned To</th>
-                            @endif
+                            @endrole
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Created
                                 AT</th>
@@ -69,14 +69,14 @@
                                             </p>
                                         </div>
                                     </td>
-                                    @if (auth()->user()->role === 'admin')
+                                    @role('admin')
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
                                                 <div
                                                     class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-                                                    @if (!empty($task->User->image) && file_exists(public_path('storage/employees/' . $task->User->image)))
+                                                    @if (!empty($task->User->photo) && file_exists(public_path('storage/' . $task->User->photo->path)))
                                                         <img class="w-full h-full object-cover"
-                                                            src="{{ asset('storage/employees/' . $task->User->image) }}"
+                                                            src="{{ asset('storage/' . $task->User->photo->path) }}"
                                                             alt="User Image">
                                                     @else
                                                         <i class="fas fa-user text-blue-600"></i>
@@ -85,7 +85,7 @@
                                                 <span>{{ $task->User->name ?? 'Null, Please change Employee' }}</span>
                                             </div>
                                         </td>
-                                    @endif
+                                    @endrole
                                     <td class="px-6 py-4">
                                         <span class="text-gray-700 ">{{ $task->created_at->format('Y-m-d') }}</span>
                                     </td>
@@ -118,6 +118,10 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('tasks.comments.index', $task->id) }}"
+                                                class="text-blue-600 hover:text-blue-800" title="View comments">
+                                                <i class="fas fa-comments"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

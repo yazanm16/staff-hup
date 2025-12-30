@@ -57,10 +57,9 @@
                                         <div class="flex items-center">
                                             <div
                                                 class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                                @if ($user->image && file_exists(public_path('storage/employees/' . $user->image)))
+                                                @if ($user->photo && file_exists(public_path('storage/' . $user->photo->path)))
                                                     <img class="w-full h-full object-cover"
-                                                        src="{{ asset('storage/employees/' . $user->image) }}"
-                                                        alt="User Image">
+                                                        src="{{ asset('storage/' . $user->photo->path) }}" alt="User Image">
                                                 @else
                                                     <i class="fas fa-user text-blue-600"></i>
                                                 @endif
@@ -78,7 +77,7 @@
                                     <td class="px-6 py-4">{{ $user->position }}</td>
                                     <td class="px-6 py-4">
                                         <span
-                                            class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">{{ $user->role }}</span>
+                                            class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">{{ $user->getRoleNames()->first() }}</span>
                                     </td>
 
                                     {{-- Action --}}

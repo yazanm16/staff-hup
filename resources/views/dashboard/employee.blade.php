@@ -14,9 +14,9 @@
                     <p class="text-gray-600 mt-2">Here's your overview</p>
                 </div>
                 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                    @if (auth()->user()->image && file_exists(public_path('storage/employees/' . auth()->user()->image)))
-                        <img class="w-full h-full object-cover"
-                            src="{{ asset('storage/employees/' . auth()->user()->image) }}" alt="User Image">
+                    @if (auth()->user()->photo && file_exists(public_path('storage/' . auth()->user()->photo->path)))
+                        <img class="w-full h-full object-cover" src="{{ asset('storage/' . auth()->user()->photo->path) }}"
+                            alt="User Image">
                     @else
                         <i class="fas fa-user text-blue-600"></i>
                     @endif

@@ -30,6 +30,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comments</th>
+
                             </tr>
                         </thead>
 
@@ -93,6 +95,14 @@
                                     <td class="px-6 py-4 text-gray-600">
                                         {{ $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('M j, Y') : '-' }}
                                     </td>
+
+                                    <td class="px-6 py-4 text-gray-600">
+                                        <a href="{{ route('tasks.comments.index', $task->id) }}"
+                                            class="text-blue-600 hover:text-blue-800" title="View comments">
+                                            <i class="fas fa-comments"></i>
+                                        </a>
+                                    </td>
+
                                 </tr>
                             @endforeach
                         </tbody>

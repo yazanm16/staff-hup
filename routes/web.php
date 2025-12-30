@@ -1,10 +1,13 @@
 <?php
 
-use App\Http\Controllers\AttendanceController; 
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,10 +36,35 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/attendance/reports', [AttendanceController::class, 'reports'])->name('attendances.reports');
     Route::get('/attendance/reports/generate', [AttendanceController::class, 'exportCsv'])->name('attendances.generateReport');
 });
+Route::middleware(['auth','permission:role.manage'])->group(function () {
+    Route::resource('roles', RoleController::class)->except(['show']);
+    Route::resource('permissions', PermissionController::class)->except('show');
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
+
+Route::resource('tasks.comments', CommentController::class)->only([
+    'index', 'store', 'destroy','update'
+]);
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('tasks/{task}/comments/deleted', [CommentController::class, 'deleted'])
+        ->name('tasks.comments.deleted');
+
+    Route::post('comments/{id}/restore', [CommentController::class, 'restore'])
+        ->name('comments.restore');
+
+    Route::delete('comments/{id}/force-delete', [CommentController::class, 'forceDelete'])
+        ->name('comments.forceDelete');
+});
+
+
+
+
+
 
 require __DIR__.'/auth.php';

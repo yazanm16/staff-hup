@@ -151,9 +151,9 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                            @if (!empty($attendance->User->image) && file_exists(public_path('storage/employees/' . $attendance->User->image)))
+                                            @if (!empty($attendance->User->photo) && file_exists(public_path('storage/' . $attendance->User->photo->path)))
                                                 <img class="w-full h-full object-cover"
-                                                    src="{{ asset('storage/employees/' . $attendance->User->image) }}"
+                                                    src="{{ asset('storage/' . $attendance->User->photo->path) }}"
                                                     alt="User Image">
                                             @else
                                                 <i class="fas fa-user text-blue-600"></i>

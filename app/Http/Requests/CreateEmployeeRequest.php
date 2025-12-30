@@ -29,7 +29,7 @@ class CreateEmployeeRequest extends FormRequest
             'position'=> 'nullable|string',
             'image'=> 'nullable|mimes:jpg,png,jpeg',
             'department_id'=> 'required|exists:departments,id',
-            'role'=> 'required|in:admin,employee',
+            'role' => 'required|exists:roles,name',
             
         ];
     }

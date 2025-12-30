@@ -60,7 +60,7 @@
 
             <div class="flex items-center gap-4 mt-2">
                 <img class="w-20 h-20 rounded-full object-cover border"
-                    src="{{ $user->image ? asset('storage/employees/' . $user->image) : asset('images/default-user.png') }}"
+                    src="{{ $user->photo ? asset('storage/' . $user->photo->path) : asset('images/default-user.png') }}"
                     alt="Profile Image">
 
                 <input id="image" name="image" type="file" class="text-sm text-gray-600" />
@@ -81,7 +81,7 @@
 
             <p class="text-sm text-gray-700 mt-1">
                 <strong>Role:</strong>
-                {{ ucfirst($user->role) }}
+                {{ ucfirst($user->getRoleNames()->first()) }}
             </p>
         </div>
 
