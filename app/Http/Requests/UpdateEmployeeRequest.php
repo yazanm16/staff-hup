@@ -22,13 +22,13 @@ class UpdateEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'=> 'required|string',
-            'email' => 'required|email',
+            'name'=> 'nullable|string',
+            'email' => 'nullable|email',
             'phone'=> 'nullable|numeric',
             'position'=> 'nullable|string',
             'image'=> 'nullable|mimes:jpg,png,jpeg',
-            'department_id'=> 'required|exists:departments,id',
-            'role' => 'required|exists:roles,name',
+            'department_id'=> 'nullable|exists:departments,id',
+            'role' => 'nullable|exists:roles,name',
             
         ];
     }

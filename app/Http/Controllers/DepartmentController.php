@@ -6,6 +6,7 @@ use App\Http\Requests\CreateDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
 use App\Models\Department;
 use App\Models\User;
+use App\Services\DepartmentService;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
@@ -13,10 +14,14 @@ class DepartmentController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function __construct(protected DepartmentService $departmentService)
+    {
+        
+    }
     public function index()
     {
-        $departments = Department::paginate(3);
-        return view('department.index', compact('departments'));
+        $data = $this->departmentService->getDepartmentsForIndex();
+        return view('department.index', $data);
     }
 
     /**
@@ -31,8 +36,7 @@ class DepartmentController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(CreateDepartmentRequest $request){
-        $date=$request->validated();
-        Department::create($date);
+        $this->departmentService->storeDepartment($request->validated());
         return redirect()->route('departments.index')->with('message', 'Department created successfully.')->with('type','success');
     }
 
@@ -49,8 +53,7 @@ class DepartmentController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdateDepartmentRequest $request, Department $department){
-        $date=$request->validated();
-        $department->update($date);
+        $this->departmentService->updateDepartment($department, $request->validated());
         return redirect()->route('departments.index')->with('message', 'Department updated successfully.')->with('type','success');
 
     }
@@ -58,12 +61,16 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Department $department){
+    public function destroy(Department $department)
+    {
 
-    if ($department->users()->exists()) {
+        try{
+            $this->departmentService->deleteDepartment($department);
+            return redirect()->route('departments.index')->with('message', 'Department deleted successfully.')->with('type','success');
+        }catch(\Exception $e){
         return redirect()->route('departments.index')->with('message', 'You can not delete this department because there is an Employees at this department')->with('type','waring');
-    }
-    $department->delete();
-    return redirect()->route('departments.index')->with('message', 'Department deleted successfully.')->with('type','success');
+
+        }
+
     }
 }
