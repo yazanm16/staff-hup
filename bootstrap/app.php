@@ -19,10 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'=>RoleMiddleware::class,
             'permission'=>PermissionMiddleware::class,
-            'role_or_permission'=>RoleOrPermissionMiddleware::class
-
-    ]);
-        
+            'role_or_permission'=>RoleOrPermissionMiddleware::class,
+            'check_token_expiration'=>\App\Http\Middleware\CheckTokenExpiration::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

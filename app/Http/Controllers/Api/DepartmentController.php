@@ -8,9 +8,11 @@ use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
 use App\Services\DepartmentService;
 use Illuminate\Http\JsonResponse;
+use App\Traits\ApiResponse;
 
 class DepartmentController extends Controller
 {
+    use ApiResponse;
     public function __construct(protected DepartmentService $departmentService)
     {
         
@@ -20,21 +22,18 @@ class DepartmentController extends Controller
     }
     public function store(CreateDepartmentRequest $request): JsonResponse{
         $department = $this->departmentService->storeDepartment($request->validated());
-        return response()->json([
-            'message' => 'Department Created Successfully',
-            'data' => new DepartmentResource($department)
-        ], 201);
+        return $this->success([new DepartmentResource($department)], 'Department Created Successfully', 201);
     }
 
     public function edit(Department $department): JsonResponse
     {
-        return response()->json([
+        return $this->success([
             'data' => new DepartmentResource($department)
         ]);
     }
     public function update(UpdateDepartmentRequest $request, Department $department): JsonResponse{
         $this->departmentService->updateDepartment($department, $request->validated());
-        return response()->json([
+        return $this->success([
             'message' => 'Department Updated Successfully',
             'data' => new DepartmentResource($department)
         ], 200);
@@ -45,14 +44,10 @@ class DepartmentController extends Controller
         try {
             $this->departmentService->deleteDepartment($department);
 
-            return response()->json([
-                'message' => 'Department Deleted Successfully'
-            ], 200);
+            return $this->success([], 'Department Deleted Successfully', 200);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 422);
+            return $this->error($e->getMessage(), 422);
         }
     }
 }
