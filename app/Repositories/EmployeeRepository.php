@@ -32,10 +32,11 @@ class EmployeeRepository implements EmployeeRepositoryContract
     }
     public function deletePhoto(User $employee)
     {
-        if ($employee->photo) {
-            Storage::disk('public')->delete($employee->photo->path);
-            $employee->photo->delete();
+        if (!$employee->photo) {
+            return;
         }
+        Storage::disk('public')->delete($employee->photo->path);
+        $employee->photo->delete();
     }
     public function storePhoto(User $employee,UploadedFile $image)
     {

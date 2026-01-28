@@ -47,10 +47,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-Route::resource('tasks.comments', CommentController::class)->only([
-    'index', 'store', 'destroy','update'
-]);
 Route::middleware(['auth'])->group(function () {
+    
+    Route::resource('tasks.comments', CommentController::class)->only([
+        'index', 'store', 'destroy','update'
+    ]);
 
     Route::get('tasks/{task}/comments/deleted', [CommentController::class, 'deleted'])
         ->name('tasks.comments.deleted');

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use App\Services\RoleService;
 
 
 class RoleController extends Controller
@@ -13,10 +14,12 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-
+    public function __construct(protected RoleService $roleService) {
+        
+    }
     public function index()
     {
-        $roles = Role::with('permissions')->get();
+        $roles = $this->roleService->getAll();
         return view('roles.index', compact('roles'));
     }
 
@@ -25,7 +28,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::get();
+        $permissions = $this->roleService->getAllPermission();
         return view('roles.create', compact('permissions'));
     }
 
@@ -34,25 +37,28 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|unique:roles,name',
             'permissions' => 'array'
         ]);
 
-        $role = Role::create(['name' => $request->name]);
-        $role->syncPermissions($request->permissions);
+        $this->roleService->create($data);
 
-        return redirect()->route('roles.index')->with('message','Role created successfully.')->with('type','success');
+        return redirect()->route('roles.index')
+            ->with('message','Role created successfully')
+            ->with('type','success');
     }
    
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Role $role)
-    {   
-        $permissions = Permission::all();
-        $rolePermissions = $role->permissions->pluck('name')->toArray();
-        return view('roles.edit', compact('permissions', 'role', 'rolePermissions'));
+    {
+        return view('roles.edit', [
+            'role' => $role,
+            'permissions' => $this->roleService->getAllPermission(),
+            'rolePermissions' => $this->roleService->getRolePermissions($role)
+        ]);
     }
 
     /**
@@ -60,18 +66,16 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
+        $data = $request->validate([
+            'name' => 'required|unique:roles,name,' . $role->id,
             'permissions' => 'array'
         ]);
 
-        $role->update([
-            'name' => $request->name
-        ]);
-        $role->syncPermissions($request->permissions ?? []);
-        return redirect()
-            ->route('roles.index')
-            ->with('message', 'Role updated successfully')->with('type','success');
+        $this->roleService->update($role, $data);
+
+        return redirect()->route('roles.index')
+            ->with('message','Role updated successfully')
+            ->with('type','success');
     }
 
     /**
@@ -79,17 +83,12 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        if($role->name=='admin'){
-            return back()->with('message', 'Cannot delete Admin role')->with('type','warning');
+        try {
+            $this->roleService->delete($role);
+            return back()->with('message','Role deleted')->with('type','success');
+        } catch (\Exception $e) {
+            return back()->with('message',$e->getMessage())->with('type','warning');
         }
-        if($role->users()->count()>0){
-            return back()->with('message', 'Cannot delete role assigned to users')->with('type','warning');
-        }
-        $role->delete();
-
-        return redirect()
-            ->route('roles.index')
-            ->with('message', 'Role deleted successfully')->with('type','success');
     }
 
     

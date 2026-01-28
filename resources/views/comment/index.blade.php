@@ -99,12 +99,14 @@
                             </p>
                             <form id="edit-{{ $comment->id }}"
                                 action="{{ route('tasks.comments.update', [$task, $comment]) }}" method="POST"
-                                class="hidden mt-3">
+                                enctype="multipart/form-data" class="hidden mt-3">
                                 @csrf
                                 @method('PUT')
 
                                 <textarea name="body" rows="3" class="w-full border rounded-lg px-3 py-2">{{ $comment->body }}</textarea>
-
+                                <div>
+                                    <input type="file" name="image" class="text-sm text-gray-600">
+                                </div>
                                 <div class="mt-2 flex gap-2">
                                     <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm">Save</button>
                                     <button type="button" onclick="toggleEdit({{ $comment->id }})"

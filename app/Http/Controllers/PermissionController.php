@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PermissionService;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
+    public function __construct(protected PermissionService $permissionService)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $permissions = Permission::orderBy('name')->get();
+        
+        $permissions = $this->permissionService->getPermission();
         return view('permissions.index', compact('permissions'));
     }
 
@@ -33,9 +38,7 @@ class PermissionController extends Controller
             'name' => 'required|string|unique:permissions,name',
         ]);
 
-        Permission::create([
-            'name' => $request->name,
-        ]);
+        $this->permissionService->storePermission($request->only('name'));
 
         return redirect()->route('permissions.index')->with('message', 'Permission created successfully')->with('type','success');
     }
@@ -58,9 +61,7 @@ class PermissionController extends Controller
             'name' => 'required|string|unique:permissions,name,' . $permission->id,
         ]);
 
-        $permission->update([
-            'name' => $request->name,
-        ]);
+        $this->permissionService->editPermission($permission, $request->only('name'));
 
         return redirect()
             ->route('permissions.index')
@@ -72,12 +73,14 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        if ($permission->roles()->exists()) {
-            return back()->with('message', 'Permission is assigned to roles')->with('type','warning');
+        try {
+            $this->permissionService->deletePermission($permission);
+
+            return back()->with('message', 'Permission deleted successfully')
+                         ->with('type', 'success');
+        } catch (\Exception $e) {
+            return back()->with('message', $e->getMessage())
+                         ->with('type', 'warning');
         }
-
-        $permission->delete();
-
-        return back()->with('message', 'Permission deleted successfully')->with('type','success');
     }
 }

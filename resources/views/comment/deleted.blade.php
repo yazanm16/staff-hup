@@ -29,6 +29,14 @@
         @forelse ($comments as $comment)
             <div class="bg-white p-4 rounded shadow flex justify-between">
                 <div>
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                        @if ($comment->user?->photo)
+                            <img src="{{ asset('storage/' . $comment->user->photo->path) }}"
+                                class="w-full h-full object-cover">
+                        @else
+                            <i class="fas fa-user text-gray-500"></i>
+                        @endif
+                    </div>
                     <p class="text-sm text-gray-500">
                         {{ $comment->user->name }}
                     </p>

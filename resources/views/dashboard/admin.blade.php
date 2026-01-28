@@ -102,20 +102,21 @@
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span>Completed</span>
-                                <span>{{ $completedPercent }}%</span>
+                                <span>{{ $stats['completedPercent'] }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ $completedPercent }}%">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ $stats['completedPercent'] }}%">
                                 </div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span>In Progress</span>
-                                <span>{{ $inProgressPercent }}%</span>
+                                <span>{{ $stats['inProgressPercent'] }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $inProgressPercent }}%">
+                                <div class="bg-blue-600 h-2 rounded-full"
+                                    style="width: {{ $stats['inProgressPercent'] }}%">
                                 </div>
                             </div>
                         </div>
@@ -123,10 +124,10 @@
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span>Pending</span>
-                                <span>{{ $pendingPercent }}%</span>
+                                <span>{{ $stats['pendingPercent'] }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-yellow-600 h-2 rounded-full" style="width: {{ $pendingPercent }}%">
+                                <div class="bg-yellow-600 h-2 rounded-full" style="width: {{ $stats['pendingPercent'] }}%">
                                 </div>
                             </div>
                         </div>

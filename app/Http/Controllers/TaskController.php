@@ -9,92 +9,83 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Services\TaskService;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    public function __construct(
+        protected TaskService $taskService
+    ) {}
+
     public function index()
     {
-        $tasks= Task::orderBy('due_date','asc')->paginate(5);
-        return view('tasks.index',compact('tasks'));
+        return view('tasks.index', [
+            'tasks' => $this->taskService->list(5)
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $users = User::get();
-        
-        return view('tasks.create', compact('users'));
+        return view('tasks.create', [
+            'users' => User::all()
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateTaskRequest $request)
     {
-       $data= $request->validated();
-        $data['status'] = 'Pending';
-        Task::create($data);
-        return redirect()->route('tasks.index')->with('message','Task Created Successfully')->with('type','success');
+        $this->taskService->create($request->validated());
+
+        return redirect()->route('tasks.index')
+            ->with('message','Task Created Successfully')
+            ->with('type','success');
     }
 
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Task $task)
     {
-        $users = User::get();
-        return view('tasks.edit',compact('task','users'));
+        return view('tasks.edit', [
+            'task' => $task,
+            'users' => User::all()
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        
-        $data= $request->validated();
-        $task->update($data);
-        return redirect()->route('tasks.index')->with('message','Task Updated Successfully')->with('type','success');
+        $this->taskService->update($task, $request->validated());
 
-
+        return redirect()->route('tasks.index')
+            ->with('message','Task Updated Successfully')
+            ->with('type','success');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Task $task)
     {
-        $task->update(['user_id' => null]);
-        $task->delete();
-        return redirect()->route('tasks.index')->with('message', 'Task deleted successfully.')->with('type','success');
-        
+        $this->taskService->delete($task);
+
+        return back()
+            ->with('message','Task deleted successfully')
+            ->with('type','success');
     }
+
     public function myTasks()
     {
-        $tasks = Task::where('user_id', Auth::id())->orderBy('due_date', 'asc')->paginate(5);
-        return view('tasks.myTasks', compact('tasks'));
-
-        
+        return view('tasks.myTasks', [
+            'tasks' => $this->taskService->myTasks(Auth::id(),5)
+        ]);
     }
+
     public function updateStatus(UpdateStatusRequest $request, Task $task)
     {
-    
-    if ($task->user_id !== Auth::id()) {
-        abort(403);
-    }
+        $this->taskService->updateStatus(
+            $task,
+            Auth::id(),
+            $request->validated()['status']
+        );
 
-        $data=$request->validated();
-
-    $task->update([
-        'status' => $data['status']
-    ]);
-
-    return back()->with('message', 'Task status updated successfully')->with('type', 'success');
-    }   
+        return back()
+            ->with('message','Task status updated successfully')
+            ->with('type','success');
+    }  
 }
