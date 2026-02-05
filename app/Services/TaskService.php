@@ -1,5 +1,6 @@
 <?php 
 namespace App\Services;
+use App\Exceptions\Task\TaskAccessDeniedException;
 use App\Models\Task;
 
 use App\Repositories\Contracts\TaskRepositoryContract;
@@ -38,7 +39,8 @@ class TaskService
     public function updateStatus(Task $task, int $userId, string $status): Task
     {
         if ($task->user_id !== $userId) {
-            abort(403);
+            throw new TaskAccessDeniedException();
+
         }
 
         return $this->taskRepository->update($task, [

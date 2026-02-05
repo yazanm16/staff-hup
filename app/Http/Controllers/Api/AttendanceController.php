@@ -26,26 +26,22 @@ class AttendanceController extends Controller{
     }
 
     public function checkIn(){
-        try{
-            $result = $this->attendanceService->checkIn();
-            return $this->success([
-                'attendance' => new AttendanceResource($result['attendance'])
-            ], $result['message'], 201);
-        }catch(Exception $e){
-            return $this->error($e->getMessage(), 409);
-        }
+        
+        $result = $this->attendanceService->checkIn();
+        return $this->success([
+            'attendance' => new AttendanceResource($result['attendance'])
+        ], $result['message'], 201);
+       
     }
 
     public function checkOut(){
-        try{
-            $result = $this->attendanceService->checkOut();
-            return $this->success([
-                'attendance' => new AttendanceResource($result['attendance']),
-                'hours' => $result['hours']
-            ], 'Checked out successfully');
-        }catch(Exception $e){
-            return $this->error($e->getMessage(), 409);
-        }
+        
+        $result = $this->attendanceService->checkOut();
+        return $this->success([
+            'attendance' => new AttendanceResource($result['attendance']),
+            'hours' => $result['hours']
+        ], 'Checked out successfully');
+        
     }
 
     public function reports(Request $request)

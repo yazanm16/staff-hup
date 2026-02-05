@@ -1,5 +1,7 @@
 <?php
 namespace App\Services;
+
+use App\Exceptions\Department\DepartmentHasEmployeesException;
 use App\Models\Department;
 use App\Repositories\Contracts\DepartmentRepositoryContract;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +30,7 @@ class DepartmentService
     public function deleteDepartment(Department $department): bool
     {
         if($department->users()->exists()){
-            throw new \Exception("You can not delete this department because there is an Employees at this department.");
+            throw new DepartmentHasEmployeesException();
         }
         return $this->departmentRepository->delete($department);
     }

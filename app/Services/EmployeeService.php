@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\Employee\DeleteEmployeeInProgressTaskException;
 use App\Models\User;
 use App\Repositories\Contracts\EmployeeRepositoryContract;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,12 +62,12 @@ class EmployeeService
         return $employee->load(['photo','roles']);
     }
     public function deleteEmployee(User $employee){
-        if($employee->tasks){
+        if($employee->tasks()->exists()){
             if($employee->tasks()->where('status', 'Completed')->exists()){
                 $employee->tasks()->delete();
             }
             else if($employee->tasks()->where('status', 'In-Progress')->exists()){
-                throw new \Exception('Cannot delete employee with in-progress tasks.');
+                throw new DeleteEmployeeInProgressTaskException();
             }
             $employee->tasks()->update(['user_id' => null]);
         }

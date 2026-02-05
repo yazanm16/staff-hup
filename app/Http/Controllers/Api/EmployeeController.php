@@ -43,13 +43,11 @@ class EmployeeController extends Controller
     }
     public function destroy(User $employee)
     {
-        try {
-            $this->employeeService->deleteEmployee($employee);
+       
+        $this->employeeService->deleteEmployee($employee);
 
-            return $this->success([], 'Employee Deleted Successfully', 200);
+        return $this->success([], 'Employee Deleted Successfully', 200);
 
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 422);
-        }
+       
     }
 }

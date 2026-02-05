@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use App\Exceptions\ApiExceptionHandler;
 use Symfony\Component\Routing\Alias;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -24,5 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (Throwable $e, $request) {
+        if ($request->expectsJson()) {
+            return app(ApiExceptionHandler::class)->handle($e, $request);
+        }
+    });
     })->create();

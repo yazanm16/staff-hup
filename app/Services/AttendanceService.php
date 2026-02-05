@@ -2,6 +2,8 @@
 namespace App\Services;
 use App\Models\Attendance;
 use App\Repositories\Contracts\AttendanceRepositoryContract;
+use App\Exceptions\Attendance\AlreadyCheckedInException;
+use App\Exceptions\Attendance\NoActiveCheckInException;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +31,7 @@ class AttendanceService
         $today = $now->toDateString();
         $existing = $this->attendanceRepository->getTodayActiveAttendance($user->id, $today);
         if($existing){
-            throw new Exception('You already checked in and not checked out yet.');
+            throw new AlreadyCheckedInException();
         }
         $attendance=$this->attendanceRepository->createCheckIn([
             'user_id'=>$user->id,
@@ -48,9 +50,8 @@ class AttendanceService
         $today = $now->toDateString();
         $attendance = $this->attendanceRepository->getTodayActiveAttendance($user->id,$today );
         if(!$attendance){
-            throw new Exception('No active check-in found for today.');
+            throw new NoActiveCheckInException();
         }
-        
     $hours = round($attendance->check_in->diffInMinutes($now) / 60,2);        
     $updated = $this->attendanceRepository->updateCheckOut($attendance, [
             'check_out' => $now,

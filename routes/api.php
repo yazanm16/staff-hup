@@ -36,18 +36,18 @@ Route::middleware(['auth:sanctum', 'check_token_expiration','role:employee'])->g
 Route::middleware(['auth:sanctum','check_token_expiration','role:admin'])->name('api.')->group( function () {
     Route::get('/dashboard/admin', [DashboardController::class,'admin']);
     Route::get('attendances/reports',[AttendanceController::class,'reports']);
-    Route::resource('employee', EmployeeController::class);
-    Route::resource('department',DepartmentController::class);
+    Route::resource('employee', EmployeeController::class)->except(['show', 'create']);
+    Route::resource('department',DepartmentController::class)->except(['create','show']);
     Route::post('comments/{id}/restore', [CommentController::class, 'restore']);
     Route::delete('comments/{id}/force-delete', [CommentController::class, 'forceDelete']);
     Route::get('tasks/{task}/comments/deleted', [CommentController::class, 'deleted']);
-    Route::resource('tasks', TaskController::class)->except(['show']);
+    Route::resource('tasks', TaskController::class)->except(['show', 'create', 'edit']);
 
     
 });
 Route::middleware(['auth:sanctum','check_token_expiration','permission:role.manage'])->name('api.')->group(function () {
-    Route::resource('roles', RoleController::class)->except(['show']);
-    Route::resource('permissions', PermissionController::class)->except('show');
+    Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
+    Route::resource('permissions', PermissionController::class)->except('show', 'create', 'edit');
 
 });
 

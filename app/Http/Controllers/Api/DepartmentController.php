@@ -41,13 +41,8 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): JsonResponse
     {
-        try {
-            $this->departmentService->deleteDepartment($department);
+        $this->departmentService->deleteDepartment($department);
 
-            return $this->success([], 'Department Deleted Successfully', 200);
-
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 422);
-        }
+        return $this->success([], 'Department Deleted Successfully', 200);
     }
 }
