@@ -59,4 +59,16 @@ class AttendanceRepository implements AttendanceRepositoryContract{
             ->orderBy('date', 'desc')
             ->get();
     }
+    public function findUser(int $id): ?User
+    {
+        return User::find($id);
+    }
+    public function exists(int $userId, string $date): bool
+    {
+        return Attendance::where('user_id', $userId)->where('date', $date)->exists();
+    }
+    public function storeFromImport(array $data): Attendance
+    {
+        return Attendance::create($data);
+    }
 }

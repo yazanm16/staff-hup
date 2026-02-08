@@ -1,7 +1,7 @@
 <?php
 namespace App\Repositories\Contracts;
 use App\Models\Attendance;
-
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 interface AttendanceRepositoryContract{
@@ -16,6 +16,8 @@ interface AttendanceRepositoryContract{
     public function getUsers();
     public function paginateReport($query, int $perPage=8);
     public function getAttendancesForExport(string $from, string $to);
-
+    public function findUser(int $id): ?user;
+    public function exists(int $userId, string $date): bool;
+    public function storeFromImport(array $data): Attendance;
 
 }

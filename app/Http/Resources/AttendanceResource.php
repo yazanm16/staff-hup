@@ -11,6 +11,7 @@ class AttendanceResource extends JsonResource{
         return [
             'id' => $this->id,
             'user_id'=>$this->user_id,
+            'user_name'=>$this->user->name,
             'check_in' => optional($this->check_in)->format('h:i:s'),
             'check_out' => optional($this->check_out)->format('h:i:s'),
             'work_hours'=>$this->work_hours,

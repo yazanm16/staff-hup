@@ -71,15 +71,19 @@ class AttendanceController extends Controller
         return view('attendances.report', array_merge($data,$filters));
     }
 
-    public function exportCsv(Request $request)
+    public function exportXlsx(Request $request)
     {
-        $from = $request->input('from', now()->subDays(7)->toDateString());
-        $to = $request->input('to', now()->toDateString());
+        // $from = $request->input('from', now()->subDays(7)->toDateString());
+        // $to = $request->input('to', now()->toDateString());
 
-        $csv=$this->attendanceService->exportCsv($from, $to);
+        // $csv=$this->attendanceService->exportCsv($from, $to);
 
-        return response($csv)
-            ->header('Content-Type', 'text/csv; charset=UTF-8')
-            ->header('Content-Disposition', "attachment; filename=attendance_report_{$from}_to_{$to}.csv");
+        // return response($csv)
+        //     ->header('Content-Type', 'text/csv; charset=UTF-8')
+        //     ->header('Content-Disposition', "attachment; filename=attendance_report_{$from}_to_{$to}.csv");
+        $from = $request->query('from', now()->subDays(7)->toDateString());
+        $to= $request->query('to', now()->toDateString());
+
+        return $this->attendanceService->exportXlsx($from, $to);
     }
 }

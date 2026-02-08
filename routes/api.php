@@ -36,6 +36,9 @@ Route::middleware(['auth:sanctum', 'check_token_expiration','role:employee'])->g
 Route::middleware(['auth:sanctum','check_token_expiration','role:admin'])->name('api.')->group( function () {
     Route::get('/dashboard/admin', [DashboardController::class,'admin']);
     Route::get('attendances/reports',[AttendanceController::class,'reports']);
+    Route::get('attendances/export/csv', [AttendanceController::class, 'exportCsv']);
+    Route::get('attendances/export/xlsx', [AttendanceController::class, 'exportExcel']);
+    Route::post('attendances/import', [AttendanceController::class, 'import']);
     Route::resource('employee', EmployeeController::class)->except(['show', 'create']);
     Route::resource('department',DepartmentController::class)->except(['create','show']);
     Route::post('comments/{id}/restore', [CommentController::class, 'restore']);

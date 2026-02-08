@@ -34,7 +34,7 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('employees', EmployeeController::class)->except(['show']);
     Route::resource('tasks', TaskController::class)->except(['show']);
     Route::get('/attendance/reports', [AttendanceController::class, 'reports'])->name('attendances.reports');
-    Route::get('/attendance/reports/generate', [AttendanceController::class, 'exportCsv'])->name('attendances.generateReport');
+    Route::get('/attendance/reports/generate', [AttendanceController::class, 'exportXlsx'])->name('attendances.generateXlsxReport');
 });
 Route::middleware(['auth','permission:role.manage'])->group(function () {
     Route::resource('roles', RoleController::class)->except(['show']);

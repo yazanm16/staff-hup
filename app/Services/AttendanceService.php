@@ -1,20 +1,23 @@
 <?php
 namespace App\Services;
+use App\Exports\AttendanceReportExport;
 use App\Models\Attendance;
 use App\Repositories\Contracts\AttendanceRepositoryContract;
 use App\Exceptions\Attendance\AlreadyCheckedInException;
 use App\Exceptions\Attendance\NoActiveCheckInException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 
 class AttendanceService 
 {
     public function __construct(protected AttendanceRepositoryContract $attendanceRepository)
-    {
-        
+    { 
     }
-
     public function getAttendancesForIndex(){
         $userId = Auth::id();
         $startOfWeek = now()->startOfWeek(Carbon::SATURDAY)->toDateString();
@@ -24,7 +27,6 @@ class AttendanceService
             'attendances' => $this->attendanceRepository->getAttendanceForPeriod($userId, $startOfWeek, $endOfWeek)
         ];
     }
-
     public function checkIn():array{
         $user = Auth::user();
         $now = now();
@@ -66,7 +68,6 @@ class AttendanceService
         
 
     }
-    
     public function buildReport(array $filters){
         $from=$filters['from'] ?? now()->subDays(7)->toDateString();
         $to=$filters['to'] ?? now()->toDateString();
@@ -120,26 +121,140 @@ class AttendanceService
             'users' => $this->attendanceRepository->getUsers(),
         ];
     }
-    public function exportCsv(string $from, string $to): string
+    public function exportXlsx(string $from, string $to): BinaryFileResponse
     {
         $attendances = $this->attendanceRepository
             ->getAttendancesForExport($from, $to);
 
-        $csv = "\xEF\xBB\xBF";
-        $csv .= "User,Department,Date,Check In,Check Out,Work Hours\n";
-
-        foreach ($attendances as $a) {
-            $csv .= sprintf(
-                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                $a->user->name,
-                optional($a->user->department)->name,
-                $a->date,
-                optional($a->check_in)?->format('h:i A'),
-                optional($a->check_out)?->format('h:i A'),
-                $a->work_hours
-            );
-        }
-
-        return $csv;
+        return Excel::download(
+            new AttendanceReportExport($attendances),
+            "attendance_report_{$from}_{$to}.xlsx"
+        );
     }
+    public function exportCsv(string $from, string $to): string
+{
+    $attendances = $this->attendanceRepository
+        ->getAttendancesForExport($from, $to);
+
+    $handle = fopen('php://temp', 'r+');
+
+    fputcsv($handle, [
+        'User',
+        'Department',
+        'Date',
+        'Check In',
+        'Check Out',
+        'Work Hours',
+    ]);
+
+    foreach ($attendances as $a) {
+        fputcsv($handle, [
+            $a->user->name,
+            optional($a->user->department)->name,
+            $a->date,
+            optional($a->check_in)?->format('h:i:s'),
+            optional($a->check_out)?->format('h:i:s'),
+            $a->work_hours,
+        ]);
+    }
+
+    rewind($handle);
+    return stream_get_contents($handle);
+    }
+    public function importAttendances(Collection $rows): array
+{
+    $imported = 0;
+    $errors = [];
+
+    foreach ($rows as $index => $row) {
+        $rowNumber = $index + 2;
+
+        try {
+
+            $user = $this->attendanceRepository
+                ->findUser($row['user_id']);
+
+            if (!$user) {
+                throw new Exception("User not found");
+            }
+
+            $date = $this->parseExcelDate($row['date']);
+            if ($date->isFuture()) {
+                throw new Exception("Date is in the future");
+            }
+
+            if (
+                $row['check_in'] &&
+                $row['check_out'] &&
+                $row['check_in'] >= $row['check_out']
+            ) {
+                throw new Exception("Check-in must be before check-out");
+            }
+
+            if ($this->attendanceRepository->exists(
+                $user->id,
+                $date->toDateString()
+            )) {
+                throw new Exception("Attendance already exists");
+            }
+            $checkIn = $this->parseExcelTime($row['check_in'], $date);
+
+            $checkOut = $this->parseExcelTime($row['check_out'], $date);
+
+            $hours = null;
+            if ($checkIn && $checkOut) {
+                $hours = round(
+                $checkIn->diffInMinutes($checkOut) / 60,2);
+            }
+
+            $this->attendanceRepository->storeFromImport([
+                'user_id'    => $user->id,
+                'date'       => $date->toDateString(),
+                'check_in'   => $checkIn,
+                'check_out'  => $checkOut,
+                'work_hours' => $hours,
+            ]);
+
+            $imported++;
+
+        } catch (Exception $e) {
+            $errors[] = "Row {$rowNumber}: {$e->getMessage()}";
+        }
+    }
+
+    return [
+        'imported' => $imported,
+        'failed'   => count($errors),
+        'errors'   => $errors,
+    ];
+    }
+    private function parseExcelDate($value):Carbon
+    {
+        if($value instanceof \DateTimeInterface){
+            return Carbon::instance($value);
+        }
+        if (is_numeric($value)) {
+            return Carbon::instance(ExcelDate::excelToDateTimeObject($value));
+        }
+        return Carbon::parse($value);
+    }
+    private function parseExcelTime($value,$date):?Carbon
+    {
+        if(!$value){
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return Carbon::instance($value);
+        }
+        if(is_numeric($value)){
+            $time = ExcelDate::excelToDateTimeObject($value);
+            return Carbon::parse($date->toDateString().' '.$time->format('H:i:s'));
+        }
+        return Carbon::parse($date->toDateString().' '.$value);
+    }
+
+
+
+
+
 }

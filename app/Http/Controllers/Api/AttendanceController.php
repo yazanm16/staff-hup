@@ -2,11 +2,14 @@
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttendanceResource;
+use App\Imports\AttendanceImport;
 use App\Models\Attendance;
 use App\Services\AttendanceService;
 use App\Traits\ApiResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class AttendanceController extends Controller{
 
@@ -60,5 +63,38 @@ class AttendanceController extends Controller{
         )
     ]);
 }
+
+public function exportCsv(Request $request)
+{
+    $from = $request->query('from', now()->subDays(7)->toDateString());
+    $to   = $request->query('to', now()->toDateString());
+
+    $csv = $this->attendanceService->exportCsv($from, $to);
+
+    return response($csv, 200, [
+        'Content-Type'        => 'text/csv; charset=UTF-8',
+        'Content-Disposition' => "attachment; filename=attendance_report_{$from}_to_{$to}.csv",
+    ]);
+}
+
+public function exportExcel(Request $request){
+    $from = $request->query('from', now()->subDays(7)->toDateString());
+    $to   = $request->query('to', now()->toDateString());
+    return $this->attendanceService->exportXlsx($from,$to);  
+}
+public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv',
+        ]);
+
+        $import = new AttendanceImport();
+        Excel::import($import, $request->file('file'));
+
+        $result = $this->attendanceService
+            ->importAttendances($import->rows());
+        return $this->success($result, 'Import finished');
+    }
+
 
 }
