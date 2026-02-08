@@ -5,6 +5,7 @@ use App\Models\Attendance;
 use App\Repositories\Contracts\AttendanceRepositoryContract;
 use App\Exceptions\Attendance\AlreadyCheckedInException;
 use App\Exceptions\Attendance\NoActiveCheckInException;
+use App\Traits\ExcelDateParser;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Carbon\Carbon;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceService 
 {
+    use ExcelDateParser;
     public function __construct(protected AttendanceRepositoryContract $attendanceRepository)
     { 
     }
@@ -183,23 +185,18 @@ class AttendanceService
                 throw new Exception("Date is in the future");
             }
 
-            if (
-                $row['check_in'] &&
-                $row['check_out'] &&
-                $row['check_in'] >= $row['check_out']
-            ) {
+            $checkIn = $this->parseExcelTime($row['check_in'], $date);
+            $checkOut = $this->parseExcelTime($row['check_out'], $date);
+
+            if ($checkIn && $checkOut && $checkIn->greaterThanOrEqualTo($checkOut)) 
+            {
                 throw new Exception("Check-in must be before check-out");
             }
 
-            if ($this->attendanceRepository->exists(
-                $user->id,
-                $date->toDateString()
-            )) {
+            if ($this->attendanceRepository->exists($user->id,$date->toDateString())) 
+            {
                 throw new Exception("Attendance already exists");
             }
-            $checkIn = $this->parseExcelTime($row['check_in'], $date);
-
-            $checkOut = $this->parseExcelTime($row['check_out'], $date);
 
             $hours = null;
             if ($checkIn && $checkOut) {
@@ -228,30 +225,7 @@ class AttendanceService
         'errors'   => $errors,
     ];
     }
-    private function parseExcelDate($value):Carbon
-    {
-        if($value instanceof \DateTimeInterface){
-            return Carbon::instance($value);
-        }
-        if (is_numeric($value)) {
-            return Carbon::instance(ExcelDate::excelToDateTimeObject($value));
-        }
-        return Carbon::parse($value);
-    }
-    private function parseExcelTime($value,$date):?Carbon
-    {
-        if(!$value){
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance($value);
-        }
-        if(is_numeric($value)){
-            $time = ExcelDate::excelToDateTimeObject($value);
-            return Carbon::parse($date->toDateString().' '.$time->format('H:i:s'));
-        }
-        return Carbon::parse($date->toDateString().' '.$value);
-    }
+    
 
 
 
