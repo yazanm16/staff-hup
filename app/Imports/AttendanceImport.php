@@ -15,7 +15,7 @@ class AttendanceImport implements ToCollection,WithHeadingRow
     {
         Validator::make($rows->toArray(), [
             '*.user_id'   => 'required|integer',
-            '*.date'      => 'required',
+            '*.date'      => 'nullable',
             '*.check_in'  => 'nullable',
             '*.check_out' => 'nullable',
         ])->validate();

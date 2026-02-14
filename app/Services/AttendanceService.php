@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use App\Exceptions\Attendance\AttendanceReportException;
 use App\Exports\AttendanceReportExport;
 use App\Models\Attendance;
 use App\Repositories\Contracts\AttendanceRepositoryContract;
@@ -224,6 +225,20 @@ class AttendanceService
         'failed'   => count($errors),
         'errors'   => $errors,
     ];
+    }
+    public function generateReport($from,$to){
+        $data=$this->attendanceRepository->getAttendancesForExport($from, $to);
+        if($data->isEmpty()){
+            throw new AttendanceReportException();
+        }
+        return $data;
+        
+    }
+    public function detectIssues($data)
+    {
+        return $data->filter(fn($attendance) => $attendance->work_hours < 8)
+                    ->values()
+                    ->toArray();
     }
     
 
