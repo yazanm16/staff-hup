@@ -9,9 +9,14 @@ use App\Mail\WeeklyAttendanceReportMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
 
 class NotifyManagersJob implements ShouldQueue
 {
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     public function handle()
     {
         try {
@@ -48,9 +53,24 @@ class NotifyManagersJob implements ShouldQueue
                 Log::info('NotifyManagersJob: Sending email with attachment', [
                     'file' => $fileName
                 ]);
+                foreach($admins as $index => $admin){
+                    try{
+                        $delay = $index * 15;
+                        $mail=(new WeeklyAttendanceReportMail($fileName))->delay(now()->addSeconds($delay));
+                        Mail::to($admin->email)->queue($mail);
+                        Log::info('NotifyManagersJob: Email queued for admin', [
+                            'admin_email' => $admin->email,
+                            'admin_name' => $admin->name ?? 'N/A',
+                            'delay_seconds' => $delay
+                        ]);
+                    }catch(\Exception $e) {
+                        Log::error('NotifyManagersJob: Failed to send email to admin', [
+                            'email' => $admin->email,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
 
-                Mail::to($admins->pluck('email'))->queue(new WeeklyAttendanceReportMail($fileName));
-
+                }
                 Log::info('NotifyManagersJob: Email queued successfully');
             } else {
                 Log::warning('NotifyManagersJob: Report file not found', [

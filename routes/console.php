@@ -10,5 +10,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::job(WeeklyAttendanceBatchJob::class)->weeklyOn(0, '08:00')->timezone('Asia/Gaza');
+    // Schedule::job(WeeklyAttendanceBatchJob::class)->weeklyOn(0, '08:00')->timezone('Asia/Gaza');
+    Schedule::job(WeeklyAttendanceBatchJob::class)->everyMinute();
 

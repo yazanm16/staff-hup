@@ -37,7 +37,7 @@ class FakeDataSeeder extends Seeder
 
         // Get or create roles
         $employeeRole = Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
-        $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
+        $managerRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         
         $this->command->info('✓ Roles ready');
 

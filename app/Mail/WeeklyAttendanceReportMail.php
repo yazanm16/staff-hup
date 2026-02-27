@@ -2,9 +2,13 @@
 namespace App\Mail;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
 
-class WeeklyAttendanceReportMail extends Mailable
+class WeeklyAttendanceReportMail extends Mailable implements ShouldQueue
 {
+    use Queueable, SerializesModels;
     public function __construct(private string $fileName)
     {
     }

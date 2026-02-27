@@ -4,12 +4,16 @@ use App\Exports\AttendanceReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\AttendanceService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Bus\Batchable;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Bus\Queueable; 
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Bus\Batchable;
 
 class GenerateWeeklyReportJob implements ShouldQueue
 {
-    use Batchable;
+    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function handle(AttendanceService $attendanceService)
     {
