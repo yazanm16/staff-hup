@@ -102,7 +102,7 @@ Scheduler → WeeklyAttendanceBatchJob
 
 | Layer          | Technology                                    |
 | -------------- | --------------------------------------------- |
-| Framework      | Laravel 11                                    |
+| Framework      | Laravel 12                                    |
 | Authentication | Laravel Sanctum (API) + Laravel Session (Web) |
 | Authorization  | Spatie Laravel Permission                     |
 | Database       | MySQL                                         |
